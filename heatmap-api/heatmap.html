@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тепловая карта населения Алматы</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+</head>
+<body>
+    <div id="map" style="width: 100%; height: 700px;"></div>
+    <script>
+        function fetchData() {
+            fetch('/heatmap-data')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('No response');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data); 
+                    var unwrappedData = data[0];
+                    var latObj = unwrappedData[0]?.latObj 
+                    var lonObj = unwrappedData[0]?.lonObj 
+
+                    var map = L.map('map').setView([latObj, lonObj], 15.45); 
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(map);
+
+                    if (unwrappedData.length > 0) {
+                        var heatData = unwrappedData.map(function(d) {
+                            return [d.lat, d.lon, d.scale || 1]; 
+                        });
+
+                        L.heatLayer(heatData, { 
+                            radius: 30, 
+                            blur: 35, 
+                            maxZoom: 10,
+                            gradient: {0.3: 'blue', 0.4: 'lime', 0.5: 'orange', 0.6: 'red'}
+                        }).addTo(map);
+                    }
+                })
+                .catch(error => console.error('json loading error', error));
+        }
+        fetchData();
+    </script>
+</body>
+</html>
