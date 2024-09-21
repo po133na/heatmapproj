@@ -9,10 +9,19 @@
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 </head>
 <body>
-    <div id="map" style="width: 100%; height: 700px;"></div>
+    <div id="map" style="width: 100%; height: 1000px;"></div>
     <script>
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            const latObj = params.get('latObj');
+            const lonObj = params.get('lonObj');
+            return { latObj, lonObj };
+        }
+
         function fetchData() {
-            fetch('/heatmap-data')
+            const { latObj, lonObj } = getQueryParams();
+
+            fetch(`/external-final?lat=${latObj}&lon=${lonObj}`) 
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('No response');
@@ -21,18 +30,17 @@
                 })
                 .then(data => {
                     console.log(data); 
-                    var unwrappedData = data[0];
-                    var latObj = unwrappedData[0]?.latObj 
-                    var lonObj = unwrappedData[0]?.lonObj 
+                    var mapCenterLat = latObj; 
+                    var mapCenterLon = lonObj; 
 
-                    var map = L.map('map').setView([latObj, lonObj], 15.45); 
+                    var map = L.map('map').setView([mapCenterLat, mapCenterLon], 15.45); 
 
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     }).addTo(map);
 
-                    if (unwrappedData.length > 0) {
-                        var heatData = unwrappedData.map(function(d) {
+                    if (data.results.length > 0) {  
+                        var heatData = data.results.map(function(d) {
                             return [d.lat, d.lon, d.scale || 1]; 
                         });
 
@@ -44,7 +52,7 @@
                         }).addTo(map);
                     }
                 })
-                .catch(error => console.error('json loading error', error));
+                .catch(error => console.error('JSON loading error', error));
         }
         fetchData();
     </script>
