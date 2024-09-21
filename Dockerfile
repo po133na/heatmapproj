@@ -14,7 +14,7 @@ RUN npm install
 COPY heatmap-api .
 
 # Expose the port on which your app will run
-EXPOSE 3000
+EXPOSE 4000
 
 # Command to run the application
 CMD ["node", "server.js"]

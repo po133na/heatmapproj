@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"     #changed
+      - "4000:4000"     #changed
     volumes:
       - ./heatmap-api:/usr/src/app
     environment:
